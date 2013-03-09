@@ -1,8 +1,9 @@
 import os 
 import string
 import re
+from readableTextFile import ReadableTextFile
 
-def parseFileToPlainText(fileName, relativePath = "", absolutePath = os.path.dirname(os.path.abspath(__file__))+"/",
+def trimFileEdges(fileName, relativePath = "", absolutePath = os.path.dirname(os.path.abspath(__file__))+"/",
 						tripWirePhrase = "From:", exitPhrase = "LZFu"):
 	'''Makes the assumption that it is being run in the same directory as the 
 	message files, relative path can be passed as second argument, or absolute
@@ -24,11 +25,14 @@ def parseFileToPlainText(fileName, relativePath = "", absolutePath = os.path.dir
 					break
 				else:
 					relevantPortion.append(line)
-		print ' '.join(relevantPortion)
+		return relevantPortion
 		
 def removeExtremelyStrangeCharacters(s):
 	'''First level of filtering, expects raw file'''
 	return filter(lambda x: x in string.printable[0:98],s)
 
 relativePath = "../DesktopClient/GraphInterface/src/testData/Field2Emails/"
-parseFileToPlainText("Follow-up.msg", relativePath)
+corpus = trimFileEdges("Follow-up.msg", relativePath)
+test = ReadableTextFile()
+test.parse(corpus)
+print test.data
