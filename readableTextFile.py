@@ -9,19 +9,20 @@ class ReadableTextFile:
 		self.dynamicFields = ["subject", "directRecipients", "ccRecipients"]
 		self.fieldBreaks = ["Subject: ", "To: ", "CC: ", "Content-Type: "]
 
-	def parse(self, corpus):
+	def parseMetaData(self, corpus):
 		'''Assumes we are getting the current result from the trimFileEdges
-		method in the parseFile file'''
+		method in the parseFile file, grabs everything currently in the data
+		dictionary minus the message body which will be handled seperately'''
 		self.data["sender"] = self.grabEmails(corpus[0])
 		self.data["date"] = corpus[1].strip()[5:] #Very reliable placement of these two
 		field = 0
 		dataField = []
 		appending = False
+		body = False
 		for line in corpus:
 			if appending is False:
 				if self.fieldBreaks[field] in line:
 					appending = True
-					#dataField.append(line[len(self.fieldBreaks[field]):])
 			if appending is True:
 				if self.fieldBreaks[field+1] in line:
 					if field == 0:
@@ -37,8 +38,27 @@ class ReadableTextFile:
 						dataField.append(line[len(self.fieldBreaks[field]):].strip())
 					else:
 						dataField.extend(self.grabEmails(line))
-		
-		
+	
+	def parseMessageBody(self, corpus):
+		'''To be run after metadata is collected, requires an accurate 
+		subject field to recognize the start of the message body.
+		Corpus should still be the same as in the parsing of metaData'''
+		body = []
+		tripped = False
+		subject = self.data["subject"].lower().strip()
+		for line in corpus:
+			if tripped is False:
+				testLine = line.lower()
+				if subject in testLine:
+					erroneousMatch = "subject: " + self.data["subject"].lower()
+					if erroneousMatch not in testLine:
+						cutOff = testLine.find(subject) + len(subject)
+						firstLine = line[cutOff:].strip()
+						body.append(firstLine)
+						tripped = True
+			elif tripped is True:
+				body.append(re.sub("\*\\t", "", line.strip()))
+		self.data["messageBody"] = ' '.join(body)
 		
 	def grabEmails(self, line):
 		'''Grabs all email addresses from a given line'''

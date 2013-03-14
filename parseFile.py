@@ -34,5 +34,6 @@ def removeExtremelyStrangeCharacters(s):
 relativePath = "../DesktopClient/GraphInterface/src/testData/Field2Emails/"
 corpus = trimFileEdges("Follow-up.msg", relativePath)
 test = ReadableTextFile()
-test.parse(corpus)
+test.parseMetaData(corpus)
+test.parseMessageBody(corpus)
 print test.data
