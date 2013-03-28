@@ -2,8 +2,9 @@ import os
 import string
 import re
 from readableTextFile import ReadableTextFile
+import json
 
-def trimFileEdges(fileName, relativePath = "", absolutePath = os.path.dirname(os.path.abspath(__file__))+"/",
+def trimFileEdges(fileName="", relativePath = "", absolutePath = os.path.dirname(os.path.abspath(__file__))+"/",
 						tripWirePhrase = "From:", exitPhrase = "LZFu"):
 	'''Makes the assumption that it is being run in the same directory as the 
 	message files, relative path can be passed as second argument, or absolute
@@ -29,11 +30,24 @@ def trimFileEdges(fileName, relativePath = "", absolutePath = os.path.dirname(os
 		
 def removeExtremelyStrangeCharacters(s):
 	'''First level of filtering, expects raw file'''
-	return filter(lambda x: x in string.printable[0:98],s)
-
+	return filter(lambda x: x in string.printable[0:98],s)	
+		
+def wrapperFunction(filePaths, outputFile):
+	allData = []
+	for path in filePaths:
+		corpus = trimFileEdges(absolutePath=path)
+		test = ReadableTextFile()
+		test.parseMetaData(corpus)
+		test.parseMessageBody(corpus)
+		allData.append(test.data)
+		del test
+	with open(outputFile, 'wb') as dataDump:
+		for data in allData:
+			dataDump.write(json.dumps(data) + "\n")
+			
 relativePath = "../DesktopClient/GraphInterface/src/testData/Field2Emails/"
 corpus = trimFileEdges("Follow-up.msg", relativePath)
 test = ReadableTextFile()
 test.parseMetaData(corpus)
 test.parseMessageBody(corpus)
-print test.data
+print json.dumps(test.data)
